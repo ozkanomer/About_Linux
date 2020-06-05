@@ -1,0 +1,148 @@
+Klavye düzeni değişimi:
+	loadkeys trq  (trq Türkçe q klavye düzeni)
+
+İnternet bağlantısı:
+
+	Ethernet bağlantısı ile bağlananlar için:
+	ping www.google.com ile bağlantılarını test etmeleri yeterlidir (Ctrl+c ile durdurabilirsiniz)
+	
+	Wi-fi kullanacaklar için:
+	wifi-menu (komutu ile kablosuz ağları sıralayabilir ve istediğiniz ağa bağlanabilirsiniz)
+
+Disk izlencesi:
+	
+cfdisk
+	Sadece arch kuracaklar için bu komuttan sonra çıkan listeden dos seçilmeli, windows ile dual boot yapmak isteyenler için
+	gpt seçimi uygun olacaktır.
+		En az 200Mb boot için yer ayrılmalı (Type 83 Linux) (Bootable yapıyoruz)
+		En az 4Gb swap alanı için yer ayrılmalı (Type 82 Linux Swap/ Solaris)
+		Geri kalanını root için ve istereniz home dizini için ayırmanız lazım (Type 83 Linux)
+	Ayırma işlemi tamamlandıktan sonra write sekmesine gelip yes diyerek onaylıyoruz ve quit sekmesi ile çıkıyoruz
+
+Biçimlendirme:
+	mkfs 
+		mkfs.ext4 /dev/sda1 (sda1 bölümünü ext4 fat formatında biçimlendirir)
+		mkfs.ext4 /dev/sda3
+	mkswap
+		mkswap /dev/sda2 (swap için ayırdığımız bölümü swap olarak tanımlıyoruz)
+
+Gerekli dizinleri oluşturma ve bağlantılarını yapma:
+	mount (dizinleri bağlamaya yarayan komut)
+	umount (bağlanan dizinin bağlantısını kesmeye yarayan komut)
+	mkdir (klasör oluşturmak için kullanılan komut)
+	
+		mount /dev/sda3 /mnt
+		mkdir /mnt/boot
+		mount /dev/sda1 /mnt/boot
+	
+	swapon / swapoff
+		
+		swapon /dev/sda2
+
+Kurulumlar:
+	
+	pacstrap (paketlerin indirilmesini ve yüklenmesini sağlar)
+
+		pacstarp -i /mnt base base-devel linux linux-firmware  (-i komutu ile kurulum yapılacak dizini tanımlıyoruz, base ve base-devel paketlerini kuruyoruz) 
+							(!Bunlar gerekli paketlerdir)
+
+		pacstrap /mnt grub os-prober (grub kurulumu)
+
+		genfstab -L -p /mnt >> /mnt/etc/fstab
+
+
+	root		(komut satırı başlangıcı şu şekilde görünmelidir: [root@archiso /]#)
+		arch-chroot /mnt     (bu komuttan sonra yukarıda yazılan ve benzeri komutlar çalışmaz)
+	
+		echo <pc adı> > /etc/hostname
+
+
+	pacman -S networkmanager  (network manager kurulumu)
+
+	systemctl enable NetworkManager.service  (systemctl -h komudu ile yardım alabilirsiniz)
+
+Gerekli config dosyalarını oluşturma:(nano çalışmaz ise pacman -S nano komutu ile kurabilirsiniz)
+
+	nano /etc/vconsole.conf (nano text editörü)(Klavye düzeni ve font config dosyasını oluşturuyoruz)
+
+		KEYMAP=trq
+		FONT=iso09.16
+		(ctrl+w ile kaydet) (ctrl+x ile çıkış)
+
+	nano /etc/locale.conf	(sistem dili config dosyası)
+		
+		LANG=tr_TR.UTF-8
+
+
+	nano /etc/timezone (Bölge saati)
+
+		Europe/Istanbul
+
+
+	nano /etc/locale.gen
+
+		Açılan listeden
+		tr_TR ISO-8859-9 ile
+		tr_TR.UTF-8 UTF-8
+		olanları bulu başındaki # işaretini siliyoruz ve kaydediyoruz
+	locale-gen (ayarları uygulama)
+
+
+Kernel Sürümü kurulumu:
+	
+	mkinitcpio -p linux 
+	(Hata Alınır ise aşağıdaki komutları deneyin)
+	mkinitcpio -P
+	mkinitcpio -p 4.12.8-2-ARCH (4.12.8 kernel sürümüdür kendi kernel sürümünüzü yazınız) (uname -r && pacman -Q linux ""Çıktısına bakabilirsiniz)
+	mkinitcpio -p etc/mkinitcpio.d/linux(kernel sürümü yaılmalı).preset
+	pacman -S filesystem linux (Bu komutu deneyip tekrar yukarıdaki komutları deneyin)
+	pacman -S linux-headers
+
+	
+	grub-mkconfig -o /boot/grub/grub.cfg (hata verir ise) grub-install /dev/sda çalıştırın(çok uzun sürer ise ctrl+c ile bırakın)
+	Yukarıdaki kodlardan sonu alamazsanız :pacman -S grub efibootmgr 
+	grub-install --target=x86_64-efi --efi-directory=/boot --bootloader -id=GRUB (32 bit sistemde çalışmaz 2 üstteki komutu tekrar çalıştırın)
+	grub-install --recheck /dev/sda (kurulup kurulmadığını kontrol edelim uzun sürebilir sabırlı olun)
+
+
+
+passwd root (komutu ile root şifresi oluşturalım)
+
+
+umount /mnt/boot
+umount /mnt
+
+exit (komutu ile root kullanıcısından çıkalım)
+reboot (komutu ile yeniden başlatalım)(kurulum tamamdır grafik arayüz hariç :D)
+
+
+Giriş:(usb ve ya cd yi çıkarmanız gerebilir)
+id:root
+şifre:oluşturduğunuz root şifresini yazın
+
+pacman -Syyu (sistem güncelleme)
+
+pacman -S xorg-server xorg-xinit mesa alsa-lib alsa-utils 
+
+Kullanıcı ekleme:
+	useradd -m -g users -G network,audio,users,video,optical,storage,wheel,power,log -s /bin/bash <kullanıcıadı>
+	passwd <kullanıcıadı>
+İstediğiniz Grafik arayüzü kurabilirsiniz :)
+
+
+
+xfce için:
+	pacman -S xorg-server
+	pacman -S xfce4 xfce4-goodies
+	pacman -S lightdm ligtdm-gtk-greeter
+	systemctl enable lightdm.service  
+	systemctl enable NetworkManager.service
+(geçmiş olsun yeniden başlatın)
+
+
+
+
+
+
+
+
