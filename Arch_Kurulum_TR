@@ -67,7 +67,7 @@ Gerekli config dosyalarını oluşturma:(nano çalışmaz ise pacman -S nano kom
 
 		KEYMAP=trq
 		FONT=iso09.16
-		(ctrl+w ile kaydet) (ctrl+x ile çıkış)
+		(ctrl+o ile kaydet) (ctrl+x ile çıkış)
 
 	nano /etc/locale.conf	(sistem dili config dosyası)
 		
