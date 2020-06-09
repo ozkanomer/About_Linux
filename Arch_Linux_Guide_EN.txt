@@ -1,0 +1,136 @@
+Keyboard:
+	loadkeys enq  (enq English q keyboard)
+
+Internet connection:
+	for ethernet connection:
+	ping www.google.com (with this command test your connection)(stop with ctrl+c)
+
+	for Wi-fi:
+	wifi-menu (open wifi menu)
+
+Disk utilities:
+
+	cfdisk
+		If you install only arch linux choose dos type in the list,for dual boot with windows choose gpt type.
+			more than 200Mb for boot or efi partition (type 83 linux)(make bootable)
+			more than 4Gb for swap area (type 82 linux swap/solaris)
+			and create root partition also if you want create home directory (type 83 linux)
+		Create partition is completed, after select write and type yes and exit with quit option
+
+Formatting:
+	mkfs (formatting command)
+		mkfs.ext4 /dev/sda1 (sda1 is formatting ext4 type)
+		mkfs.ext4 /dev/sda3
+	mkswap
+		mkswap /dev/sda2 (define swap partition with mkswap command)
+
+Mount necessary directory:
+	mount (command)
+	umount
+	mkdir  (create a directory)
+		
+		mount /dev/sda3 /mnt
+		mkdir /mnt/boot
+		mount /dev/sda1 /mnt/boot
+
+	swapon / swapoff
+		
+		swapon /dev/sda2
+
+Installation:
+
+	pacstrap (this command make download and install packages)
+
+		pacstrap -i /mnt base base-devel linux linux-firmware  (define directory that for installing with -i command)
+
+		pacstrap /mnt grub os-prober (grub installation)
+
+		genfstab -L -p /mnt >> /mnt/etc/fstab
+
+	root (command line looks like: [root@archiso /]#)
+
+		arch-chroot /mnt (when enter this command some commands will not work for example pacstrap for exitting enter exit command)
+
+		echo <pc name> > /etc/hostname
+
+	pacman -S networkmanager
+
+	systemctl enable NetworkManager.service (help for systemctl -h)
+
+
+Creating necessary config files:(If nano command does not work pacman -S nano enter this command)
+
+	
+	nano /etc/vconsole.conf
+
+
+		KEYMAP=enq
+		FONT=iso09.16
+		(ctrl+w save) (ctrl+x exit)
+
+	nano /etc/locale.conf
+		
+		LANG=(enter language you want)
+
+	nano /etc/timezone
+	
+		Europe/(enter zone)
+
+	nano /etc/locale.gen
+		(In list, find language package and font you want after delete #)
+	locale-gen (save)
+
+Installation Kernel:
+	mkinitcpio -p linux 
+	
+	mkinitcpio -P	
+	mkinitcpio -p 4.12.8-2-ARCH
+	mkinitcpio -p etc/mkinitcpio.d/linux
+	pacman -S filesystem linux
+	pacman -S linux-headers
+
+	grub-mkconfig -o /boot/grub/grub.cfg	grub-install /dev/sda 	pacman -S grub efibootmgr
+	grub-install --target=x86_64-efi --efi-directory=/boot --bootloader -id=GRUB (this command will nor run 32bit systems)
+	grub-install --recheck /dev/sda
+
+passwd root
+
+umount /mnt/boot
+umount /mnt
+
+exit
+reboot
+
+(Enter your id:(it is root) and password)
+
+pacman- Syyu (for update)
+
+pacman -S xorg-server xorg-xinit mesa alsa-lib alsa-utils
+
+Add user:
+	useradd -m -g users -G network,audio,users,video,optical,storage,wheel,power,log -s /bin/bash <username>
+	passwd <username>
+
+Installation is done after this you install graphic package you want
+
+for xfce:
+	pacman -S xorg-server
+	pacman -S xfce4 xfce4-goodies
+	pacman -S lightdm ligtdm-gtk-greeter
+	systemctl enable lightdm.service  
+	systemctl enable NetworkManager.service
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
