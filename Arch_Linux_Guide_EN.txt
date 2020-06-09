@@ -66,7 +66,7 @@ Creating necessary config files:(If nano command does not work pacman -S nano en
 
 		KEYMAP=enq
 		FONT=iso09.16
-		(ctrl+w save) (ctrl+x exit)
+		(ctrl+o save) (ctrl+x exit)
 
 	nano /etc/locale.conf
 		
